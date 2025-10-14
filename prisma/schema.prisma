@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model episodes {
+  id         Int       @id @default(autoincrement())
+  podcast_id Int?
+  title      String
+  audio_url  String
+  duration   Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  podcasts   podcasts? @relation(fields: [podcast_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model favorites {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  podcast_id Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  podcasts   podcasts? @relation(fields: [podcast_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, podcast_id])
+}
+
+model likes {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  podcast_id Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  podcasts   podcasts? @relation(fields: [podcast_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, podcast_id])
+}
+
+model podcasts {
+  id         Int         @id @default(autoincrement())
+  title      String
+  author     String
+  topic      String?
+  created_by Int?
+  created_at DateTime?   @default(now()) @db.Timestamp(6)
+  episodes   episodes[]
+  favorites  favorites[]
+  likes      likes[]
+  users      users?      @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id         Int         @id @default(autoincrement())
+  name       String
+  email      String      @unique
+  password   String
+  role       String?     @default("user")
+  created_at DateTime?   @default(now()) @db.Timestamp(6)
+  favorites  favorites[]
+  likes      likes[]
+  podcasts   podcasts[]
+}
