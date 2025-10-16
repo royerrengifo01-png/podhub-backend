@@ -3,13 +3,16 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import podcastRoutes from './routes/podcast.js'
+import podcastRoutes from "./routes/podcast.js"; // 👈 importa la ruta
 
 const app = express();
 const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
+
+// 👇 aquí conectamos las rutas de podcasts
+app.use("/api/podcasts", podcastRoutes);
 
 const JWT_SECRET = "super_secret_key"; // puedes cambiarla
 
