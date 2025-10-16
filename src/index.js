@@ -3,6 +3,7 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import podcastRoutes from './routes/podcast.js'
 
 const app = express();
 const prisma = new PrismaClient();
@@ -69,4 +70,4 @@ app.get("/api/profile", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Servidor corriendo en el puerto ${PORT}`));
+app.listen(PORT, () => console.log(` Servidor corriendo en el puerto ${PORT}`));
