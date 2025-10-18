@@ -45,11 +45,14 @@ model podcasts {
   author     String
   topic      String?
   created_by Int?
+  image_url String?  // new column for the image
   created_at DateTime?   @default(now()) @db.Timestamp(6)
   episodes   episodes[]
   favorites  favorites[]
   likes      likes[]
   users      users?      @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+
+
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
