@@ -3,16 +3,25 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import podcastRoutes from "./routes/podcast.js"; // 👈 importa la ruta
+import podcastRoutes from "./routes/podcast.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const prisma = new PrismaClient();
+
+// 📂 configuración de ruta absoluta
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ✅ permitir acceso público a la carpeta /uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://podhub-frontend.onrender.com"],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -21,7 +30,7 @@ app.use(express.json());
 // 👇 aquí conectamos las rutas de podcasts
 app.use("/api/podcasts", podcastRoutes);
 
-const JWT_SECRET = "super_secret_key"; // puedes cambiarla
+const JWT_SECRET = "super_secret_key";
 
 // 🧩 Registro de usuario
 app.post("/api/register", async (req, res) => {
