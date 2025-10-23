@@ -1,17 +1,23 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import {
+  getPodcasts,
+  createPodcast,
+  getPodcastById,
+  deletePodcast
+} from "../controllers/podcastController.js";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
-router.get("/", async (req, res) => {
-  try {
-    const podcasts = await prisma.podcasts.findMany();
-    res.json(podcasts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener los podcasts" });
-  }
-});
+// 📦 Obtener todos los podcasts
+router.get("/", getPodcasts);
+
+// ➕ Crear un nuevo podcast
+router.post("/", createPodcast);
+
+// 🔍 Obtener un podcast por ID
+router.get("/:id", getPodcastById);
+
+// ❌ Eliminar un podcast
+router.delete("/:id", deletePodcast);
 
 export default router;
