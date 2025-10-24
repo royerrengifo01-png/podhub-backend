@@ -3,9 +3,14 @@ import multer from "multer";
 import cloudinary from "../config/cloudinary.js";
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
+import express from "express";
+import upload from "../middleware/upload.js";
+import { uploadPodcast } from "../controllers/podcastController.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
+router.post("/upload", upload.single("file"), uploadPodcast);
+
 
 // 📂 Configurar multer (guarda temporalmente el archivo)
 const upload = multer({ dest: "uploads/" });
