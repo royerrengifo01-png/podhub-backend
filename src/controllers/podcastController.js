@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import cloudinary from "../config/cloudinary.js"; // 🧩 Importamos Cloudinary
 
 // ✅ Configurar rutas absolutas correctamente para ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +17,7 @@ if (!fs.existsSync(uploadDir)) {
 
 const prisma = new PrismaClient();
 
-// ✅ Configuración de multer para guardar archivos localmente
+// ✅ Configuración de multer para guardar archivos temporalmente
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -29,7 +30,7 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage });
 
-// 🧩 Crear un nuevo podcast con imagen
+// 🧩 Crear un nuevo podcast con subida a Cloudinary
 export const createPodcast = async (req, res) => {
   try {
     const { title, author, topic, created_by } = req.body;
@@ -40,8 +41,24 @@ export const createPodcast = async (req, res) => {
       });
     }
 
-    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    let image_url = null;
 
+    // 🪄 Subir imagen a Cloudinary si existe
+    if (req.file) {
+      const filePath = req.file.path;
+
+      const result = await cloudinary.uploader.upload(filePath, {
+        folder: "podhub_podcasts", // 📁 Carpeta en tu Cloudinary
+        resource_type: "image",
+      });
+
+      image_url = result.secure_url;
+
+      // 🧹 Eliminar archivo local tras subirlo
+      fs.unlinkSync(filePath);
+    }
+
+    // 🧩 Crear registro en la base de datos
     const newPodcast = await prisma.podcasts.create({
       data: {
         title,
@@ -59,7 +76,7 @@ export const createPodcast = async (req, res) => {
   }
 };
 
-// 🧩 Obtener todos los podcasts (más recientes primero)
+// 🧩 Obtener todos los podcasts
 export const getPodcasts = async (req, res) => {
   try {
     const podcasts = await prisma.podcasts.findMany({
