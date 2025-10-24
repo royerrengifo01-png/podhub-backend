@@ -1,36 +1,41 @@
 import { PrismaClient } from "@prisma/client";
 import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import path from "path";
 import { fileURLToPath } from "url";
-import cloudinary from "../config/cloudinary.js"; // 🧩 Importamos Cloudinary
 
-// ✅ Configurar rutas absolutas correctamente para ESM
+// ✅ Configurar ruta absoluta
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Crear la carpeta "uploads" si no existe
+const prisma = new PrismaClient();
+
+// ✅ Configurar Cloudinary con variables de entorno
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// ✅ Configuración de multer (subida temporal local antes de enviar a Cloudinary)
 const uploadDir = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const prisma = new PrismaClient();
-
-// ✅ Configuración de multer para guardar archivos temporalmente
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
 export const upload = multer({ storage });
 
-// 🧩 Crear un nuevo podcast con subida a Cloudinary
+// 🧩 Crear un nuevo podcast con imagen
 export const createPodcast = async (req, res) => {
   try {
     const { title, author, topic, created_by } = req.body;
@@ -43,22 +48,21 @@ export const createPodcast = async (req, res) => {
 
     let image_url = null;
 
-    // 🪄 Subir imagen a Cloudinary si existe
+    // 📤 Si el usuario subió una imagen, la enviamos a Cloudinary
     if (req.file) {
       const filePath = req.file.path;
 
-      const result = await cloudinary.uploader.upload(filePath, {
-        folder: "podhub_podcasts", // 📁 Carpeta en tu Cloudinary
-        resource_type: "image",
+      const uploadResult = await cloudinary.uploader.upload(filePath, {
+        folder: "podhub_podcasts",
       });
 
-      image_url = result.secure_url;
+      image_url = uploadResult.secure_url;
 
-      // 🧹 Eliminar archivo local tras subirlo
+      // 🧹 Borramos el archivo temporal después de subirlo
       fs.unlinkSync(filePath);
     }
 
-    // 🧩 Crear registro en la base de datos
+    // 🗃 Guardamos en la base de datos
     const newPodcast = await prisma.podcasts.create({
       data: {
         title,
