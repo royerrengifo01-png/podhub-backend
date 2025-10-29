@@ -7,9 +7,9 @@ import podcastRoutes from "./routes/podcast.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
-app.use("/api/profile", profileRoutes);
+import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 
-
+// ⚡ Inicializar Express y Prisma
 const app = express();
 const prisma = new PrismaClient();
 
@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 // ✅ Servir archivos estáticos desde la carpeta "uploads"
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// 🌐 Middlewares globales
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://podhub-frontend.onrender.com"],
@@ -27,10 +28,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 app.use(express.json());
 
-// 👇 Conectamos las rutas de podcasts
+// 🔗 Rutas principales
+app.use("/api/profile", profileRoutes);
 app.use("/api/podcasts", podcastRoutes);
 
 const JWT_SECRET = "super_secret_key";
@@ -84,14 +85,12 @@ app.post("/api/register", async (req, res) => {
 //
 // 🔑 Login
 //
-import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await prisma.users.findUnique({ where: { email } });
-    if (!user)
-      return res.status(400).json({ error: "Usuario no encontrado" });
+    if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
@@ -127,34 +126,45 @@ app.get("/api/profile", async (req, res) => {
   }
 });
 
+//
+// 🧠 Actualizar o completar perfil con foto
+//
+app.put(
+  "/api/profile/update",
+  uploadProfile.single("profile_photo"),
+  async (req, res) => {
+    try {
+      const { email, name, adress, phone, city, state } = req.body;
+
+      const user = await prisma.users.findUnique({ where: { email } });
+      if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+      let profile_photo = user.profile_photo;
+
+      // 📸 Si el usuario envía una nueva imagen
+      if (req.file) {
+        const filePath = req.file.path;
+        profile_photo = await uploadToCloudinary(filePath);
+      }
+
+      const updatedUser = await prisma.users.update({
+        where: { email },
+        data: { name, adress, phone, city, state, profile_photo },
+      });
+
+      res.json({
+        message: "Perfil actualizado correctamente",
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error("❌ Error al actualizar el perfil:", error);
+      res.status(500).json({ error: "Error al actualizar el perfil" });
+    }
+  }
+);
+
+// 🚀 Iniciar servidor
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`)
 );
-// 🧠 Actualizar o completar perfil con foto
-app.put("/api/profile/update", uploadProfile.single("profile_photo"), async (req, res) => {
-  try {
-    const { email, name, adress, phone, city, state } = req.body;
-
-    const user = await prisma.users.findUnique({ where: { email } });
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
-    let profile_photo = user.profile_photo;
-
-    // 📸 Si el usuario envía una nueva imagen
-    if (req.file) {
-      const filePath = req.file.path;
-      profile_photo = await uploadToCloudinary(filePath);
-    }
-
-    const updatedUser = await prisma.users.update({
-      where: { email },
-      data: { name, adress, phone, city, state, profile_photo },
-    });
-
-    res.json({ message: "Perfil actualizado correctamente", user: updatedUser });
-  } catch (error) {
-    console.error("❌ Error al actualizar el perfil:", error);
-    res.status(500).json({ error: "Error al actualizar el perfil" });
-  }
-});
