@@ -34,7 +34,6 @@ app.use(
 );
 
 // 👇 Esta línea asegura que responda bien a las preflight requests
-app.options("*", cors());
 
 app.use(express.json());
 
