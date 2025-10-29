@@ -1,34 +1,46 @@
 import express from "express";
-import { uploadProfile, uploadToCloudinary } from "../middleware/uploadProfile.js";
-import { PrismaClient } from "@prisma/client";
+import multer from "multer";
+import { prisma } from "../lib/prisma.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const upload = multer({ storage: multer.memoryStorage() });
 
-router.put("/update", uploadProfile.single("profile_photo"), async (req, res) => {
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+router.post("/update", upload.single("foto"), async (req, res) => {
   try {
-    const { email, name, adress, phone, city, state } = req.body;
+    const { nombre, email, direccion, telefono, ciudad, estado } = req.body;
+    let fotoUrl = null;
 
-    const user = await prisma.users.findUnique({ where: { email } });
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
-    let profile_photo = user.profile_photo;
-
-    // 📸 Si el usuario envía una nueva imagen
     if (req.file) {
-      const filePath = req.file.path;
-      profile_photo = await uploadToCloudinary(filePath);
+      const uploadResult = await cloudinary.uploader.upload_stream(
+        { folder: "podhub_profiles" },
+        (error, result) => {
+          if (error) throw error;
+          fotoUrl = result.secure_url;
+        }
+      );
     }
 
     const updatedUser = await prisma.users.update({
       where: { email },
-      data: { name, adress, phone, city, state, profile_photo },
+      data: {
+        name: nombre,
+        adress: direccion,
+        phone: telefono,
+        city: ciudad,
+        state: estado,
+        profile_photo: fotoUrl, // 👈 guardamos solo la URL
+      },
     });
 
-    res.json({
-      message: "Perfil actualizado correctamente",
-      user: updatedUser,
-    });
+    res.json({ mensaje: "Perfil actualizado correctamente", updatedUser });
   } catch (error) {
     console.error("❌ Error al actualizar perfil:", error);
     res.status(500).json({ error: "Error al actualizar perfil" });
