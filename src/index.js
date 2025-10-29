@@ -9,37 +9,52 @@ import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 
-// ⚡ Inicializar Express y Prisma
 const app = express();
 const prisma = new PrismaClient();
 
-// 📂 Configuración de ruta absoluta
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Servir archivos estáticos desde la carpeta "uploads"
+// ✅ Servir archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🌐 Middlewares globales
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://podhub-frontend.onrender.com"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// ✅ Configuración robusta de CORS
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://podhub-frontend.onrender.com",
+  ];
+  const origin = req.headers.origin;
 
-// 👇 Esta línea asegura que responda bien a las preflight requests
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(express.json());
 
-// 🔗 Rutas principales
+// ✅ Rutas principales
 app.use("/api/profile", profileRoutes);
 app.use("/api/podcasts", podcastRoutes);
+
+// ... 🔽 resto de tu código (register, login, update, etc.)
+
 
 const JWT_SECRET = "super_secret_key";
 
