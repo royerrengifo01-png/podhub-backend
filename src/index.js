@@ -23,11 +23,19 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // 🌐 Middlewares globales
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://podhub-frontend.onrender.com"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: [
+      "http://localhost:5173",
+      "https://podhub-frontend.onrender.com"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+// 👇 Esta línea asegura que responda bien a las preflight requests
+app.options("*", cors());
+
 app.use(express.json());
 
 // 🔗 Rutas principales
