@@ -168,10 +168,18 @@ app.put(
         profile_photo = await uploadToCloudinary(filePath);
       }
 
-      const updatedUser = await prisma.users.update({
-        where: { email },
-        data: { name, adress, phone, city, state, profile_photo },
-      });
+const updatedUser = await prisma.users.update({
+  where: { email },
+  data: {
+    name: name || user.name,
+    adress: adress || user.adress,
+    phone: phone || user.phone,
+    city: city || user.city,
+    state: state || user.state,
+    profile_photo: profile_photo ? profile_photo : user.profile_photo,
+  },
+});
+
 
       res.json({
         message: "Perfil actualizado correctamente",

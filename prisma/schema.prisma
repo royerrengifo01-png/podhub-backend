@@ -69,7 +69,8 @@ model users {
   phone         String?      @db.VarChar(50)
   city          String?      @db.VarChar(100)
   state         String?      @db.VarChar(100)
-  profile_photo String?      @db.VarChar(255)
+  profile_photo Json?
+
 
   favorites     favorites[]
   likes         likes[]
