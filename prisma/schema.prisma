@@ -57,13 +57,21 @@ model podcasts {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model users {
-  id         Int         @id @default(autoincrement())
-  name       String
-  email      String      @unique
-  password   String
-  role       String?     @default("user")
-  created_at DateTime?   @default(now()) @db.Timestamp(6)
-  favorites  favorites[]
-  likes      likes[]
-  podcasts   podcasts[]
+  id            Int          @id @default(autoincrement())
+  name          String
+  email         String       @unique
+  password      String
+  role          String?      @default("user")
+  created_at    DateTime?    @default(now()) @db.Timestamp(6)
+
+  // Campos nuevos
+  adress        String?      @db.VarChar(255)
+  phone         String?      @db.VarChar(50)
+  city          String?      @db.VarChar(100)
+  state         String?      @db.VarChar(100)
+  profile_photo String?      @db.VarChar(255)
+
+  favorites     favorites[]
+  likes         likes[]
+  podcasts      podcasts[]
 }
