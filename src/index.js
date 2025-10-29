@@ -163,7 +163,6 @@ app.put(
 
       let profile_photo = user.profile_photo;
 
-      // 📸 Si el usuario envía una nueva imagen
       if (req.file) {
         const filePath = req.file.path;
         profile_photo = await uploadToCloudinary(filePath);
@@ -179,11 +178,16 @@ app.put(
         user: updatedUser,
       });
     } catch (error) {
-      console.error("❌ Error al actualizar el perfil:", error);
+      console.error("❌ Error al actualizar el perfil:", error.message);
+console.error("🧠 Detalles:", error);
+console.log("📨 Datos recibidos:", req.body);
+console.log("📸 Archivo recibido:", req.file);
+
       res.status(500).json({ error: "Error al actualizar el perfil" });
     }
   }
 );
+
 
 // 🚀 Iniciar servidor
 const PORT = process.env.PORT || 4000;
