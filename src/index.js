@@ -6,6 +6,9 @@ import jwt from "jsonwebtoken";
 import podcastRoutes from "./routes/podcast.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import profileRoutes from "./routes/profileRoutes.js";
+app.use("/api/profile", profileRoutes);
+
 
 const app = express();
 const prisma = new PrismaClient();

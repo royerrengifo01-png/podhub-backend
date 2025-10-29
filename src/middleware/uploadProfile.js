@@ -1,29 +1,30 @@
-import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import multer from "multer";
+import cloudinary from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-// ✅ Configuración de Cloudinary (asegúrate de tener las variables en Railway)
-cloudinary.config({
+// Configurar Cloudinary
+cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Configuración del almacenamiento en Cloudinary
+// Configurar el almacenamiento en Cloudinary
 const storage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary.v2,
   params: {
-    folder: 'profiles', // Carpeta donde se guardarán las fotos de perfil
-    allowed_formats: ['jpg', 'png', 'jpeg'],
+    folder: "podhub_profiles", // Carpeta donde se guardan las fotos
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
   },
 });
 
-// ✅ Configuramos multer con el almacenamiento de Cloudinary
-const uploadProfile = multer({ storage });
+// Middleware de subida
+export const uploadProfile = multer({ storage });
 
-// ✅ Función auxiliar opcional si quieres subir manualmente archivos
-async function uploadToCloudinary(filePath) {
-  return await cloudinary.uploader.upload(filePath);
-}
-
-export { uploadProfile, uploadToCloudinary };
+// Función auxiliar para subir manualmente (por si quieres usarla luego)
+export const uploadToCloudinary = async (filePath) => {
+  return await cloudinary.v2.uploader.upload(filePath, {
+    folder: "podhub_profiles",
+  });
+};
