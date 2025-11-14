@@ -1,17 +1,26 @@
-import express from "express";
-import {
-  upload,
-  createPodcast,
-  getPodcasts,
-  getPodcastById,
-  deletePodcast
-} from "../controllers/podcastController.js";
+  import express from "express";
+  import {
+    upload,
+    createPodcast,
+    getPodcasts,
+    getPodcastById,
+    deletePodcast
+  } from "../controllers/podcastController.js";
 
-const router = express.Router();
+  const router = express.Router();
 
-router.get("/", getPodcasts);
-router.post("/", upload.single("image"), createPodcast);
-router.get("/:id", getPodcastById);
-router.delete("/:id", deletePodcast);
+  router.get("/", getPodcasts);
+  
+router.post(
+  "/",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "audio", maxCount: 1 }
+  ]),
+  createPodcast
+);
 
-export default router;
+  router.get("/:id", getPodcastById);
+  router.delete("/:id", deletePodcast);
+
+  export default router;
