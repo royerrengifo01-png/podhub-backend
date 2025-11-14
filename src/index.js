@@ -8,9 +8,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
-import likes from "./routes/likes.js";
-app.use("/likes", likes);
-const app = express();
+import likes from "./routes/likes.js";   // ✔ IMPORTAR RUTA
+
+const app = express(); // ✔ PRIMERO SE INICIALIZA
 const prisma = new PrismaClient();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 // Servir archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Configuración robusta de CORS
+// ---------------- CORS ----------------
 app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:5173",
@@ -31,36 +31,25 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+  if (req.method === "OPTIONS") return res.sendStatus(200);
 
   next();
 });
 
 app.use(express.json());
 
-// Rutas principales
+// ------------- RUTAS PRINCIPALES -------------
 app.use("/api/profile", profileRoutes);
 app.use("/api/podcasts", podcastRoutes);
-
-
+app.use("/api/likes", likes);    // ✔ AHORA /api/likes FUNCIONA
 
 const JWT_SECRET = "super_secret_key";
 
-//
-// Registro de usuario (extendido con datos del perfil)
-//
+// --------------- REGISTER ----------------
 app.post("/api/register", async (req, res) => {
   try {
     const {
@@ -74,16 +63,13 @@ app.post("/api/register", async (req, res) => {
       profile_photo,
     } = req.body;
 
-    // Validar si el usuario ya existe
     const existingUser = await prisma.users.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "El usuario ya existe" });
     }
 
-    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Crear usuario con todos los campos
     const user = await prisma.users.create({
       data: {
         email,
@@ -104,9 +90,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-//
-//  Login
-//
+// ---------------- LOGIN ----------------
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -118,9 +102,7 @@ app.post("/api/login", async (req, res) => {
     if (!isPasswordValid)
       return res.status(400).json({ error: "Contraseña incorrecta" });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
 
     res.json({ message: "Inicio de sesión exitoso", token });
   } catch (error) {
@@ -129,9 +111,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-//
-// Obtener perfil del usuario autenticado
-//
+// --------------- GET PROFILE ----------------
 app.get("/api/profile", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No autorizado" });
@@ -148,9 +128,7 @@ app.get("/api/profile", async (req, res) => {
   }
 });
 
-//
-//  Actualizar o completar perfil con foto
-//
+// --------------- UPDATE PROFILE ----------------
 app.put(
   "/api/profile/update",
   uploadProfile.single("profile_photo"),
@@ -168,36 +146,29 @@ app.put(
         profile_photo = await uploadToCloudinary(filePath);
       }
 
-const updatedUser = await prisma.users.update({
-  where: { email },
-  data: {
-    name: name || user.name,
-    adress: adress || user.adress,
-    phone: phone || user.phone,
-    city: city || user.city,
-    state: state || user.state,
-    profile_photo: profile_photo ? profile_photo : user.profile_photo,
-  },
-});
-
+      const updatedUser = await prisma.users.update({
+        where: { email },
+        data: {
+          name: name || user.name,
+          adress: adress || user.adress,
+          phone: phone || user.phone,
+          city: city || user.city,
+          state: state || user.state,
+          profile_photo: profile_photo || user.profile_photo,
+        },
+      });
 
       res.json({
         message: "Perfil actualizado correctamente",
         user: updatedUser,
       });
     } catch (error) {
-      console.error("Error al actualizar el perfil:", error.message);
-console.error("Detalles:", error);
-console.log("Datos recibidos:", req.body);
-console.log("Archivo recibido:", req.file);
-
       res.status(500).json({ error: "Error al actualizar el perfil" });
     }
   }
 );
 
-
-// Iniciar servidor
+// ---------------- SERVER ----------------
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
   console.log(`Servidor corriendo en el puerto ${PORT}`)
