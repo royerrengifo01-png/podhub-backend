@@ -8,7 +8,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
-
+import likes from "./routes/likes.js";
+app.use("/likes", likes);
 const app = express();
 const prisma = new PrismaClient();
 
@@ -17,7 +18,6 @@ const __dirname = path.dirname(__filename);
 
 // Servir archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/podcasts", podcastRoutes)
 
 // Configuración robusta de CORS
 app.use((req, res, next) => {
