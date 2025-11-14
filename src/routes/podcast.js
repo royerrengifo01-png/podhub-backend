@@ -10,16 +10,7 @@
   const router = express.Router();
 
   router.get("/", getPodcasts);
-  
-router.post(
-  "/",
-  upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "audio", maxCount: 1 }
-  ]),
-  createPodcast
-);
-
+  router.post("/", upload.single("image"), createPodcast);
   router.get("/:id", getPodcastById);
   router.delete("/:id", deletePodcast);
 

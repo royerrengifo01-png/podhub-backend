@@ -15,10 +15,11 @@ const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Servir archivos estáticos
+// Servir archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/podcasts", podcastRoutes)
 
-// ✅ Configuración robusta de CORS
+// Configuración robusta de CORS
 app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:5173",
@@ -49,17 +50,16 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// ✅ Rutas principales
+// Rutas principales
 app.use("/api/profile", profileRoutes);
 app.use("/api/podcasts", podcastRoutes);
 
-// ... 🔽 resto de tu código (register, login, update, etc.)
 
 
 const JWT_SECRET = "super_secret_key";
 
 //
-// 🧩 Registro de usuario (extendido con datos del perfil)
+// Registro de usuario (extendido con datos del perfil)
 //
 app.post("/api/register", async (req, res) => {
   try {
@@ -74,16 +74,16 @@ app.post("/api/register", async (req, res) => {
       profile_photo,
     } = req.body;
 
-    // 🔍 Validar si el usuario ya existe
+    // Validar si el usuario ya existe
     const existingUser = await prisma.users.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: "El usuario ya existe" });
     }
 
-    // 🔒 Encriptar contraseña
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🗃 Crear usuario con todos los campos
+    // Crear usuario con todos los campos
     const user = await prisma.users.create({
       data: {
         email,
@@ -99,13 +99,13 @@ app.post("/api/register", async (req, res) => {
 
     res.json({ message: "Usuario registrado correctamente", user });
   } catch (error) {
-    console.error("❌ Error en /api/register:", error);
+    console.error("Error en /api/register:", error);
     res.status(500).json({ error: "Error en el servidor" });
   }
 });
 
 //
-// 🔑 Login
+//  Login
 //
 app.post("/api/login", async (req, res) => {
   try {
@@ -124,13 +124,13 @@ app.post("/api/login", async (req, res) => {
 
     res.json({ message: "Inicio de sesión exitoso", token });
   } catch (error) {
-    console.error("❌ Error en /api/login:", error);
+    console.error("Error en /api/login:", error);
     res.status(500).json({ error: "Error en el servidor" });
   }
 });
 
 //
-// 👤 Obtener perfil del usuario autenticado
+// Obtener perfil del usuario autenticado
 //
 app.get("/api/profile", async (req, res) => {
   const authHeader = req.headers.authorization;
@@ -149,7 +149,7 @@ app.get("/api/profile", async (req, res) => {
 });
 
 //
-// 🧠 Actualizar o completar perfil con foto
+//  Actualizar o completar perfil con foto
 //
 app.put(
   "/api/profile/update",
@@ -186,10 +186,10 @@ const updatedUser = await prisma.users.update({
         user: updatedUser,
       });
     } catch (error) {
-      console.error("❌ Error al actualizar el perfil:", error.message);
-console.error("🧠 Detalles:", error);
-console.log("📨 Datos recibidos:", req.body);
-console.log("📸 Archivo recibido:", req.file);
+      console.error("Error al actualizar el perfil:", error.message);
+console.error("Detalles:", error);
+console.log("Datos recibidos:", req.body);
+console.log("Archivo recibido:", req.file);
 
       res.status(500).json({ error: "Error al actualizar el perfil" });
     }
@@ -197,8 +197,8 @@ console.log("📸 Archivo recibido:", req.file);
 );
 
 
-// 🚀 Iniciar servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
-  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`)
+  console.log(`Servidor corriendo en el puerto ${PORT}`)
 );

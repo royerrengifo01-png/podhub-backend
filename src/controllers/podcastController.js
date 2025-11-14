@@ -47,34 +47,22 @@ export const createPodcast = async (req, res) => {
     }
 
     let image_url = null;
-    let audio_url = null;
 
-    // 📤 Subir imagen si existe
-    if (req.files?.image?.[0]) {
-      const imagePath = req.files.image[0].path;
+    // 📤 Si el usuario subió una imagen, la enviamos a Cloudinary
+    if (req.file) {
+      const filePath = req.file.path;
 
-      const imageUpload = await cloudinary.uploader.upload(imagePath, {
+      const uploadResult = await cloudinary.uploader.upload(filePath, {
         folder: "podhub_podcasts",
       });
 
-      image_url = imageUpload.secure_url;
-      fs.unlinkSync(imagePath);
+      image_url = uploadResult.secure_url;
+
+      // 🧹 Borramos el archivo temporal después de subirlo
+      fs.unlinkSync(filePath);
     }
 
-    // 🎵 Subir audio si existe
-    if (req.files?.audio?.[0]) {
-      const audioPath = req.files.audio[0].path;
-
-      const audioUpload = await cloudinary.uploader.upload(audioPath, {
-        folder: "podhub_podcasts",
-        resource_type: "video", // Cloudinary exige esto para audios
-      });
-
-      audio_url = audioUpload.secure_url;
-      fs.unlinkSync(audioPath);
-    }
-
-    // 🗃 Guardamos en la BD
+    // 🗃 Guardamos en la base de datos
     const newPodcast = await prisma.podcasts.create({
       data: {
         title,
@@ -82,7 +70,6 @@ export const createPodcast = async (req, res) => {
         topic,
         created_by: created_by ? Number(created_by) : null,
         image_url,
-        audio_url,
       },
     });
 
