@@ -1,9 +1,11 @@
+// middleware/auth.js
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "super_secret_key"; // usa el mismo que en index.js
+const JWT_SECRET = "super_secret_key";
 
 export default function auth(req, res, next) {
   const header = req.headers.authorization;
+
   if (!header) {
     return res.status(401).json({ error: "Token requerido" });
   }
@@ -14,7 +16,7 @@ export default function auth(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = { id: decoded.userId };
     next();
-  } catch (error) {
+  } catch (err) {
     return res.status(401).json({ error: "Token inválido" });
   }
 }
