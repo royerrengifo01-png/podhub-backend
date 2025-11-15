@@ -11,7 +11,7 @@ import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js
 import likes from "./routes/likes.js";   // ✔ IMPORTAR RUTA
 import authRoutes from "./routes/auth.js";
 import auth from "./routes/auth.js";
-app.use("/api/auth", authRoutes);
+
 
 
 
@@ -20,6 +20,7 @@ const prisma = new PrismaClient();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 
 // Servir archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -61,7 +62,7 @@ const JWT_SECRET = "super_secret_key";
 // --------------- REGISTER ----------------
 
 // ---------------- LOGIN ----------------
-
+app.use("/api/auth", authRoutes);
 
 // --------------- GET PROFILE ----------------
 app.get("/api/profile", async (req, res) => {
