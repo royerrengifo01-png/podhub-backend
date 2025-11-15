@@ -9,68 +9,48 @@ import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 import likes from "./routes/likes.js";
-import authRoutes from "./routes/auth.js";  // ✔ solo uno, no duplicado
+import authRoutes from "./routes/auth.js";
 
-const app = express();        // <-- ✔ Ahora sí, PRIMERO se inicializa
+const app = express();
 const prisma = new PrismaClient();
-
-// Ahora sí puedes usar rutas
-app.use("/api/auth", authRoutes);   // ✔ YA FUNCIONA
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ... (resto del código)
+// ---------------- CORS GLOBAL — DEBE IR ANTES DE TODAS LAS RUTAS ----------------
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://podhub-frontend.onrender.com"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    credentials: true
+  })
+);
 
-
-
-// Servir archivos estáticos
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ---------------- CORS ----------------
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "https://podhub-frontend.onrender.com",
-  ];
-
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-
-  // 👇 ESTA LÍNEA ES LA CORRECTA
-  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-
-  next();
-});
-
+// Necesario para JSON
 app.use(express.json());
 
-// ------------- RUTAS PRINCIPALES -------------
+// Archivos estáticos
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ---------------- RUTAS ----------------
+app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/podcasts", podcastRoutes);
-app.use("/api/likes", likes);    // ✔ AHORA /api/likes FUNCIONA
+app.use("/api/likes", likes);
 
+// ---------------- GET PROFILE ----------------
 const JWT_SECRET = "super_secret_key";
 
-// --------------- REGISTER ----------------
-
-// ---------------- LOGIN ----------------
-
-// --------------- GET PROFILE ----------------
 app.get("/api/profile", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No autorizado" });
 
   const token = authHeader.split(" ")[1];
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await prisma.users.findUnique({
@@ -82,7 +62,7 @@ app.get("/api/profile", async (req, res) => {
   }
 });
 
-// --------------- UPDATE PROFILE ----------------
+// ---------------- UPDATE PROFILE ----------------
 app.put(
   "/api/profile/update",
   uploadProfile.single("profile_photo"),
@@ -96,8 +76,7 @@ app.put(
       let profile_photo = user.profile_photo;
 
       if (req.file) {
-        const filePath = req.file.path;
-        profile_photo = await uploadToCloudinary(filePath);
+        profile_photo = await uploadToCloudinary(req.file.path);
       }
 
       const updatedUser = await prisma.users.update({
@@ -108,7 +87,7 @@ app.put(
           phone: phone || user.phone,
           city: city || user.city,
           state: state || user.state,
-          profile_photo: profile_photo || user.profile_photo,
+          profile_photo,
         },
       });
 
