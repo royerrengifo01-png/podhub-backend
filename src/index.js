@@ -10,7 +10,9 @@ import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 import likes from "./routes/likes.js";   // ✔ IMPORTAR RUTA
 import authRoutes from "./routes/auth.js";
+import auth from "./routes/auth.js";
 app.use("/api/auth", authRoutes);
+
 
 
 const app = express(); // ✔ PRIMERO SE INICIALIZA
