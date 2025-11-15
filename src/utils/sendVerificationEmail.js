@@ -1,4 +1,4 @@
-import { transporter } from "../config/email.js";
+import { transporter } from "../utils/email.js";
 
 export const sendVerificationEmail = async (email, token) => {
   const link = `${process.env.BASE_URL}/api/auth/verify/${token}`;

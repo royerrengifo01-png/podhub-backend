@@ -3,7 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import { sendVerificationEmail } from "..utils/sendVerificationEmail.js";
+import sendVerificationEmail from "../utils/sendVerificationEmail.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
