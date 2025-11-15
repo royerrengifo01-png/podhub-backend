@@ -21,9 +21,11 @@ router.post("/register", async (req, res) => {
     }
 
     const exists = await prisma.users.findUnique({ where: { email } });
-    if (exists) {
-      return res.status(400).json({ error: "El usuario ya existe" });
-    }
+} catch (error) {
+  console.log("REGISTER ERROR:", error);
+  res.status(500).json({ error: "Error en el servidor" });
+}
+
 
     const hashed = await bcrypt.hash(password, 10);
 
