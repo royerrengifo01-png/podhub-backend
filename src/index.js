@@ -9,6 +9,9 @@ import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
 import likes from "./routes/likes.js";   // ✔ IMPORTAR RUTA
+import authRoutes from "./routes/auth.js";
+app.use("/api/auth", authRoutes);
+
 
 const app = express(); // ✔ PRIMERO SE INICIALIZA
 const prisma = new PrismaClient();
@@ -54,66 +57,9 @@ app.use("/api/likes", likes);    // ✔ AHORA /api/likes FUNCIONA
 const JWT_SECRET = "super_secret_key";
 
 // --------------- REGISTER ----------------
-app.post("/api/register", async (req, res) => {
-  try {
-    const {
-      email,
-      password,
-      name,
-      adress,
-      phone,
-      city,
-      state,
-      profile_photo,
-    } = req.body;
-
-    const existingUser = await prisma.users.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ error: "El usuario ya existe" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.users.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        adress,
-        phone,
-        city,
-        state,
-        profile_photo,
-      },
-    });
-
-    res.json({ message: "Usuario registrado correctamente", user });
-  } catch (error) {
-    console.error("Error en /api/register:", error);
-    res.status(500).json({ error: "Error en el servidor" });
-  }
-});
 
 // ---------------- LOGIN ----------------
-app.post("/api/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
 
-    const user = await prisma.users.findUnique({ where: { email } });
-    if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid)
-      return res.status(400).json({ error: "Contraseña incorrecta" });
-
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
-
-    res.json({ message: "Inicio de sesión exitoso", token });
-  } catch (error) {
-    console.error("Error en /api/login:", error);
-    res.status(500).json({ error: "Error en el servidor" });
-  }
-});
 
 // --------------- GET PROFILE ----------------
 app.get("/api/profile", async (req, res) => {
