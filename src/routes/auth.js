@@ -39,7 +39,8 @@ router.post("/register", async (req, res) => {
         password: hashed,
         name: name || "",
         verified: false,
-        verification_token: verificationToken
+        verify_token: verificationToken
+
       }
     });
 
@@ -62,7 +63,8 @@ router.get("/verify/:token", async (req, res) => {
 
     const user = await prisma.users.updateMany({
       where: { email: decoded.email },
-      data: { verified: true, verification_token: null }
+      data: { verified: true, verify_token: null }
+
     });
 
     if (user.count === 0) {

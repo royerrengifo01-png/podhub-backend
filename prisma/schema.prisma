@@ -63,7 +63,8 @@ model users {
   role          String?      @default("user")
   created_at    DateTime?    @default(now()) @db.Timestamp(6)
   verified      Boolean      @default(false)
-  verification_token String?
+  verify_token String?
+
 
   // Campos nuevos
   adress        String?      @db.VarChar(255)
