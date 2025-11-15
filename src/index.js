@@ -8,18 +8,20 @@ import path from "path";
 import { fileURLToPath } from "url";
 import profileRoutes from "./routes/profileRoutes.js";
 import { uploadProfile, uploadToCloudinary } from "./middleware/uploadProfile.js";
-import likes from "./routes/likes.js";   // ✔ IMPORTAR RUTA
-import authRoutes from "./routes/auth.js";
-import auth from "./routes/auth.js";
+import likes from "./routes/likes.js";
+import authRoutes from "./routes/auth.js";  // ✔ solo uno, no duplicado
 
-
-
-
-const app = express(); // ✔ PRIMERO SE INICIALIZA
+const app = express();        // <-- ✔ Ahora sí, PRIMERO se inicializa
 const prisma = new PrismaClient();
+
+// Ahora sí puedes usar rutas
+app.use("/api/auth", authRoutes);   // ✔ YA FUNCIONA
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ... (resto del código)
+
 
 
 // Servir archivos estáticos
@@ -62,7 +64,6 @@ const JWT_SECRET = "super_secret_key";
 // --------------- REGISTER ----------------
 
 // ---------------- LOGIN ----------------
-app.use("/api/auth", authRoutes);
 
 // --------------- GET PROFILE ----------------
 app.get("/api/profile", async (req, res) => {
