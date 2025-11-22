@@ -6,6 +6,7 @@ import {
   getPodcastById,
   deletePodcast
 } from "../controllers/podcastController.js";
+import isAdmin from "../middleware/isAdmin.js";
 
 const router = express.Router();
 
