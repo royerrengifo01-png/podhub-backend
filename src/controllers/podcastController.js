@@ -65,7 +65,7 @@ export const createPodcast = async (req, res) => {
     res.status(201).json(newPodcast);
 
   } catch (error) {
-    console.error("❌ Error al crear el podcast:", error);
+    console.error(" Error al crear el podcast:", error);
     res.status(500).json({ error: "Error al crear el podcast" });
   }
 };
@@ -79,7 +79,7 @@ export const getPodcasts = async (req, res) => {
     });
     res.status(200).json(podcasts);
   } catch (error) {
-    console.error("❌ Error al obtener podcasts:", error);
+    console.error("Error al obtener podcasts:", error);
     res.status(500).json({ error: "Error al obtener podcasts" });
   }
 };
@@ -98,7 +98,7 @@ export const getPodcastById = async (req, res) => {
     res.json(podcast);
 
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error(" Error:", error);
     res.status(500).json({ error: "Error al buscar podcast" });
   }
 };
@@ -113,7 +113,7 @@ export const deletePodcast = async (req, res) => {
     res.json({ message: "Podcast eliminado" });
 
   } catch (error) {
-    console.error("❌ Error al eliminar:", error);
+    console.error(" Error al eliminar:", error);
     res.status(500).json({ error: "Error al eliminar el podcast" });
   }
 };

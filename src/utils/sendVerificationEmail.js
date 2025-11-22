@@ -1,12 +1,12 @@
 import { transporter } from "../utils/email.js";
 
 export const sendVerificationEmail = async (email, token) => {
-  console.log("📧 Ejecutando sendVerificationEmail...");
-  console.log("📨 Email destino:", email);
-  console.log("🔗 Token:", token);
+  console.log(" Ejecutando sendVerificationEmail...");
+  console.log("Email destino:", email);
+  console.log("Token:", token);
 
   const link = `${process.env.BASE_URL}/api/auth/verify/${token}`;
-  console.log("🔗 Link de verificación generado:", link);
+  console.log(" Link de verificación generado:", link);
 
   try {
     const result = await transporter.sendMail({
@@ -21,10 +21,10 @@ export const sendVerificationEmail = async (email, token) => {
       `
     });
 
-    console.log("✅ Email enviado correctamente:", result);
+    console.log("Email enviado correctamente:", result);
 
   } catch (error) {
-    console.error("❌ ERROR AL ENVIAR EMAIL:", error);
+    console.error(" ERROR AL ENVIAR EMAIL:", error);
     throw new Error("No se pudo enviar el correo de verificación");
   }
 };
