@@ -130,13 +130,24 @@ router.post("/login", async (req, res) => {
     }
 
     console.log(" GENERANDO JWT...");
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "1d"
-    });
+const token = jwt.sign(
+  { userId: user.id, role: user.role }, 
+  JWT_SECRET, 
+  { expiresIn: "1d" }
+);
 
     console.log("TOKEN GENERADO:", token);
 
-    res.json({ message: "Inicio de sesión exitoso", token });
+res.json({
+  message: "Inicio de sesión exitoso",
+  token,
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  }
+});
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
