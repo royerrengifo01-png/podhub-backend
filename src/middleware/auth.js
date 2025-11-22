@@ -1,7 +1,6 @@
-// middleware/auth.js
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "super_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
 
 export default function auth(req, res, next) {
   const header = req.headers.authorization;
